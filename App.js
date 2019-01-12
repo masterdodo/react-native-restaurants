@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {Platform, StyleSheet, TouchableHighlight, Linking, Button, Text, View} from 'react-native';
 import axios from 'axios';
 import call from 'react-native-phone-call';
+import openMap from 'react-native-open-maps';
 
 type Props = {};
 export default class App extends Component<Props> {
@@ -12,7 +13,7 @@ export default class App extends Component<Props> {
 
   componentWillMount() 
   {
-    axios.get('https://raw.aristovnik.com/restaurants/get_all_restaurants.php')
+    axios.get('https://aristovnik.000webhostapp.com/get_all_restaurants.php')
     .then(response => {
       const restaurants = response.data;
       this.setState({ restaurants });
