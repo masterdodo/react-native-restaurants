@@ -4,20 +4,26 @@ import axios from 'axios';
 import call from 'react-native-phone-call';
 import openMap from 'react-native-open-maps';
 
-type Props = {};
-export default class App extends Component<Props> {
+// MENU API
+// https://aristovnik.com/restaurants/get_restaurant_items.php
+
+export default class App extends Component {
 
   state = {
     restaurants: []
   }
 
-  componentWillMount() 
-  {
-    axios.get('https://aristovnik.000webhostapp.com/get_all_restaurants.php')
+  getAllRestaurants = () =>{
+    axios.get('https://aristovnik.com/restaurants/get_all_restaurants.php')
     .then(response => {
       const restaurants = response.data;
       this.setState({ restaurants });
     })
+  }
+
+  componentWillMount() 
+  {
+    this.getAllRestaurants();
   }
 
   render() {
@@ -44,6 +50,14 @@ export default class App extends Component<Props> {
               }
             >
               <Text style={styles.email}>Email: {restaurant.email}</Text>
+            </TouchableHighlight>
+            <TouchableHighlight
+              underlayColor='#BB86FC'
+              onPress={() => 
+                openMap({ latitude: 46.3598496, longitude: 15.113127 })
+              }
+            >
+              <Text>Open in maps</Text>
             </TouchableHighlight>
           </View>
           )
