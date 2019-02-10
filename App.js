@@ -3,12 +3,12 @@ import {Platform, StyleSheet, TouchableHighlight, Linking, Button, Text, View} f
 import axios from 'axios';
 import call from 'react-native-phone-call';
 import openMap from 'react-native-open-maps';
+import { createAppContainer, createStackNavigator, StackActions, NavigationActions } from 'react-navigation';
 
 // MENU API
-// https://aristovnik.com/restaurants/get_restaurant_items.php
+// https://aristovnik.com/restaurants/get_restaurant_items.php?id=
 
-export default class App extends Component {
-
+class HomeScreen extends React.Component {
   state = {
     restaurants: []
   }
@@ -54,11 +54,19 @@ export default class App extends Component {
             <TouchableHighlight
               underlayColor='#BB86FC'
               onPress={() => 
-                openMap({ latitude: 46.3598496, longitude: 15.113127 })
+                openMap({ latitude: JSON.parse(restaurant.loc_x), longitude: JSON.parse(restaurant.loc_y), zoom: 20 })
               }
             >
-              <Text>Open in maps</Text>
+              <Text style={styles.maps}>Open in maps</Text>
             </TouchableHighlight>
+            <Button
+              title="Menu"
+              onPress={() => {
+                this.props.navigation.navigate('Menu', {
+                  restaurantId: restaurant.id,
+                });
+              }}
+            />
           </View>
           )
         })}
@@ -66,6 +74,56 @@ export default class App extends Component {
     );
   }
 }
+
+class MenuScreen extends React.Component {
+  state = {
+    items: []
+  }
+
+  getAllRestaurants = () =>{
+    const { navigation } = this.props;
+    const itemId = navigation.getParam('restaurantId', 'NO-ID');
+    axios.get('https://aristovnik.com/restaurants/get_restaurant_items.php?id='+itemId)
+    .then(response => {
+      const items = response.data;
+      this.setState({ items });
+    })
+  }
+
+  componentWillMount() 
+  {
+    this.getAllRestaurants();
+  }
+
+  render() {
+    return (
+      <View>
+        { this.state.items.map((item) => {
+          return(
+            <View key={item.id} style={styles.item}>
+              <Text style={styles.item_name}>{item.name}</Text>
+              <Text style={styles.item_price}>Cena: {item.price}€</Text>
+            </View>
+            )
+        })}
+      </View>
+  );
+}
+}
+
+const AppNavigator = createStackNavigator({
+  Home: {
+    screen: HomeScreen,
+  },
+  Menu: {
+    screen: MenuScreen,
+  },
+}, {
+    initialRouteName: 'Home',
+});
+
+export default createAppContainer(AppNavigator);
+
 
 const styles = StyleSheet.create({
   container: {
@@ -110,5 +168,23 @@ const styles = StyleSheet.create({
     margin: 3,
     marginLeft: 10,
     textDecorationLine: 'underline',
+  },
+  maps: {
+    fontSize: 15,
+    margin: 3,
+    marginLeft: 10,
+    marginBottom: 10,
+    textDecorationLine: 'underline',
+  },
+  item_name: {
+    fontSize: 24,
+    margin: 8,
+    marginLeft: 15,
+    fontWeight: '600',
+  },
+  item_price: {
+    fontSize: 26,
+    margin: 6,
+    marginLeft: 20,
   },
 });
